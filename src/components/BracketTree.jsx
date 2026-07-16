@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { getFlag } from '../data/flags';
 import { REAL_MATCHES } from '../data/realBracket';
 import { normalize, parseList, display } from '../utils/scoring';
@@ -6,12 +8,28 @@ import { normalize, parseList, display } from '../utils/scoring';
 // chips + an SVG overlay for the connector lines, then the whole thing
 // scrolls horizontally inside .bracket-tree — that's intentional, it's
 // the friendliest way to show a wide tournament tree on a phone.
-const COL_W = 132;
-const COL_GAP = 46;
-const COL_STEP = COL_W + COL_GAP;
-const CHIP_H = 40;
-const LEAF_GAP = 12;
-const LEAF_SLOT = CHIP_H + LEAF_GAP;
+// Two size presets: desktop-sized chips are too wide for a phone screen
+// (5 columns at 132px each force a huge horizontal scroll), so on small
+// viewports we switch to a denser preset that keeps more of the tree
+// visible at once while still being comfortably tappable/readable.
+const DESKTOP_METRICS = { COL_W: 132, COL_GAP: 46, CHIP_H: 40, LEAF_GAP: 12 };
+const MOBILE_METRICS = { COL_W: 100, COL_GAP: 22, CHIP_H: 40, LEAF_GAP: 8 };
+const MOBILE_BREAKPOINT = 640; // matches App.css
+
+function useMetrics() {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const onChange = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  return { ...(isMobile ? MOBILE_METRICS : DESKTOP_METRICS), isMobile };
+}
 
 const COLUMNS = [
   { key: 'octavos', label: 'Octavos' },
@@ -51,8 +69,8 @@ function stageChips(realTeams, playerRawPicks) {
 
 // Elbow connector(s) from a column of children into the midpoints of the
 // next column, drawn as one <path> per column transition.
-function connectorPath(childRightX, childYs, parentX, parentYs) {
-  const bridgeX = childRightX + COL_GAP / 2;
+function connectorPath(childRightX, childYs, parentX, parentYs, colGap) {
+  const bridgeX = childRightX + colGap / 2;
   const parts = [];
   parentYs.forEach((parentY, i) => {
     const y0 = childYs[2 * i];
@@ -65,11 +83,11 @@ function connectorPath(childRightX, childYs, parentX, parentYs) {
   return parts.join(' ');
 }
 
-function Chip({ x, y, team, status, alt, champ }) {
+function Chip({ x, y, team, status, alt, champ, colW, chipH }) {
   return (
     <div
       className={`pick-chip abs ${champ ? 'champ-chip' : ''} ${status}`}
-      style={{ left: x, top: y, width: COL_W, height: CHIP_H }}
+      style={{ left: x, top: y, width: colW, height: chipH }}
     >
       <div className="chip-main">
         <span className="flag">{getFlag(team)}</span>
@@ -81,6 +99,11 @@ function Chip({ x, y, team, status, alt, champ }) {
 }
 
 export default function BracketTree({ player }) {
+  const { COL_W, COL_GAP, CHIP_H, LEAF_GAP, isMobile } = useMetrics();
+  const COL_STEP = COL_W + COL_GAP;
+  const LEAF_SLOT = CHIP_H + LEAF_GAP;
+  const [expandedStage, setExpandedStage] = useState(null);
+
   const octavosTeams = REAL_MATCHES.octavos.map(m => m.winner);
   const cuartosTeams = REAL_MATCHES.cuartos.map(m => m.winner);
   const semisTeams = REAL_MATCHES.semis.map(m => m.winner);
@@ -117,10 +140,61 @@ export default function BracketTree({ player }) {
   const totalWidth = xByCol.campeon + COL_W;
   const totalHeight = octavosTeams.length * LEAF_SLOT;
 
-  const path1 = connectorPath(xByCol.octavos + COL_W, leafCenters, xByCol.cuartos, cuartosCenters);
-  const path2 = connectorPath(xByCol.cuartos + COL_W, cuartosCenters, xByCol.semis, semisCenters);
-  const path3 = connectorPath(xByCol.semis + COL_W, semisCenters, xByCol.final, finalCenters);
-  const path4 = connectorPath(xByCol.final + COL_W, finalCenters, xByCol.campeon, [campeonCenter]);
+  const path1 = connectorPath(xByCol.octavos + COL_W, leafCenters, xByCol.cuartos, cuartosCenters, COL_GAP);
+  const path2 = connectorPath(xByCol.cuartos + COL_W, cuartosCenters, xByCol.semis, semisCenters, COL_GAP);
+  const path3 = connectorPath(xByCol.semis + COL_W, semisCenters, xByCol.final, finalCenters, COL_GAP);
+  const path4 = connectorPath(xByCol.final + COL_W, finalCenters, xByCol.campeon, [campeonCenter], COL_GAP);
+
+  if (isMobile) {
+    const stages = [
+      { key: 'octavos', label: 'Octavos', chips: octavosChips },
+      { key: 'cuartos', label: 'Cuartos', chips: cuartosChips },
+      { key: 'semis', label: 'Semis', chips: semisChips },
+      { key: 'final', label: 'Final', chips: finalChips },
+      { key: 'campeon', label: 'Campeón', chips: campeonChip ? [campeonChip] : [] },
+    ];
+
+    return (
+      <div className="bracket-accordion">
+        {stages.map(s => {
+          const isOpen = expandedStage === s.key;
+          const pending = s.chips.some(c => c.status === 'pending');
+          const hits = s.chips.filter(c => c.status === 'hit').length;
+          const ratio = s.chips.length > 0 ? hits / s.chips.length : 0;
+          const summaryStatus = pending ? 'pending' : ratio === 0 ? 'miss' : ratio === 0.5 ? 'half' : 'hit';
+          return (
+            <div key={s.key} className={`bracket-stage ${isOpen ? 'open' : ''}`}>
+              <button
+                type="button"
+                className="bracket-stage-header"
+                onClick={() => setExpandedStage(isOpen ? null : s.key)}
+                aria-expanded={isOpen}
+              >
+                <span className="stage-name">{s.label}</span>
+                <span className={`stage-summary ${summaryStatus}`}>
+                  {s.chips.length === 0 ? '—' : pending ? 'Pendiente' : `${hits}/${s.chips.length}`}
+                </span>
+                <ChevronDown size={16} className="chevron" />
+              </button>
+              {isOpen && (
+                <div className="bracket-stage-body">
+                  {s.chips.length === 0 ? (
+                    <p className="empty-note">Todavía no hay pick para esta fase.</p>
+                  ) : s.chips.map((c, i) => (
+                    <div key={i} className={`pick-row ${s.key === 'campeon' ? 'champ-row' : ''} ${c.status}`}>
+                      <span className="flag">{getFlag(c.team)}</span>
+                      <span className="team-name">{display(c.team)}</span>
+                      {c.alt && <span className="chip-alt">{display(c.alt)}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="bracket-tree">
@@ -141,19 +215,19 @@ export default function BracketTree({ player }) {
         </svg>
 
         {octavosChips.map((c, i) => (
-          <Chip key={`o-${i}`} x={xByCol.octavos} y={leafCenters[i] - CHIP_H / 2} {...c} />
+          <Chip key={`o-${i}`} x={xByCol.octavos} y={leafCenters[i] - CHIP_H / 2} colW={COL_W} chipH={CHIP_H} {...c} />
         ))}
         {cuartosChips.map((c, i) => (
-          <Chip key={`c-${i}`} x={xByCol.cuartos} y={cuartosCenters[i] - CHIP_H / 2} {...c} />
+          <Chip key={`c-${i}`} x={xByCol.cuartos} y={cuartosCenters[i] - CHIP_H / 2} colW={COL_W} chipH={CHIP_H} {...c} />
         ))}
         {semisChips.map((c, i) => (
-          <Chip key={`s-${i}`} x={xByCol.semis} y={semisCenters[i] - CHIP_H / 2} {...c} />
+          <Chip key={`s-${i}`} x={xByCol.semis} y={semisCenters[i] - CHIP_H / 2} colW={COL_W} chipH={CHIP_H} {...c} />
         ))}
         {finalChips.map((c, i) => (
-          <Chip key={`f-${i}`} x={xByCol.final} y={finalCenters[i] - CHIP_H / 2} {...c} />
+          <Chip key={`f-${i}`} x={xByCol.final} y={finalCenters[i] - CHIP_H / 2} colW={COL_W} chipH={CHIP_H} {...c} />
         ))}
         {campeonChip && (
-          <Chip key="champ" x={xByCol.campeon} y={campeonCenter - CHIP_H / 2} champ {...campeonChip} />
+          <Chip key="champ" x={xByCol.campeon} y={campeonCenter - CHIP_H / 2} colW={COL_W} chipH={CHIP_H} champ {...campeonChip} />
         )}
       </div>
     </div>

@@ -26,4 +26,4 @@ export const REAL_RESULTS = {
             "NUEVA ZELANDA"]
 };
 
-export const STATUS_TEXT = "Semifinales completas · Final ESPAÑA-ARGENTINA el 19/07";
+export const STATUS_TEXT = "Final ESPAÑA-ARGENTINA el 19/07";

@@ -18,17 +18,24 @@ function App() {
 
   return (
     <div className="dashboard-container">
-      <div className="header">
-        <div>
+      <header className="header">
+        <div className="header-text">
+          <p className="header-eyebrow"><span className="dot" aria-hidden="true" />Mundial 2026 · Cuadro en vivo</p>
           <h1 className="dashboard-title">Predicción Mundial 2026</h1>
           <p className="sub">Clasificación en vivo de las {players.length} predicciones, con el desglose completo de aciertos y penalizaciones de cada uno.</p>
         </div>
         <div className="status-pill">
-          <div className="label"><Trophy size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} /> Estado</div>
-          <div className="value">{STATUS_TEXT}</div>
+          <div className="status-pill-row">
+            <Trophy size={13} />
+            <span className="label">Estado del torneo</span>
+          </div>
+          <div className="value status-live-container">
+            <span className="live-pulse-dot" aria-hidden="true" />
+            {STATUS_TEXT}
+          </div>
         </div>
-      </div>
-
+      </header>
+      <div className="pitch-divider" aria-hidden="true"><span /></div>
 
       <div className="grid-layout">
         <div>
