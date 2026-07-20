@@ -54,7 +54,7 @@ export default function ChampionBanner({ champion, players }) {
 
       {topWinner && (
         <div className="champion-winners">
-          <span className="champion-winners-label">Ganador de la quiniela</span>
+          <span className="champion-winners-label">GANADOR DE LA PREDICCIÓN</span>
           <div className="champion-winners-list">
             <span className="champion-winner-pill">
               {topWinner.name} · {topWinner.breakdown.total} pts

@@ -2,14 +2,14 @@
 
 :root {
   --bg-main: #0b130d;
-  --bg-card: #1c150f;
-  --bg-card-hover: #241b13;
-  --bg-inset: #17110c;
-  --border: #3a2c1d;
-  --border-soft: #291e14;
-  --text-main: #f7f2e9;
-  --text-muted: #a89a86;
-  --text-dim: #6e5f4c;
+  --bg-card: #18181b;       /* Antes: #1c150f */
+  --bg-card-hover: #27272a; /* Antes: #241b13 */
+  --bg-inset: #09090b;      /* Antes: #17110c */
+  --border: #3f3f46;        /* Antes: #3a2c1d */
+  --border-soft: #27272a;   /* Antes: #291e14 */
+  --text-main: #fafafa;     /* Antes: #f7f2e9 */
+  --text-muted: #a1a1aa;    /* Antes: #a89a86 */
+  --text-dim: #71717a;      /* Antes: #6e5f4c */
   --pitch: #4ade80;
   --pitch-bg: rgba(74, 222, 128, 0.1);
   --red: #f87171;
