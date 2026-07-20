@@ -57,6 +57,6 @@ export const REAL_MATCHES = {
     M("INGLATERRA", "ARGENTINA", "ARGENTINA"),
   ],
   campeon: [
-    M("ESPAÑA", "ARGENTINA", null), // pendiente, se juega el 19/07/2026
+    M("ESPAÑA", "ARGENTINA", "ESPAÑA"),
   ],
 };

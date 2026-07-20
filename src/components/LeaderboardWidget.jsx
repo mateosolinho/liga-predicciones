@@ -27,6 +27,9 @@ export default function LeaderboardWidget({ players, onSelect }) {
                   ))}
                 </div>
               </div>
+              <div className={`champ-tag ${p.track.campeon.status}`}>
+                {p.track.campeon.status === 'hit' ? '✓ Campeón' : '✗ Campeón'}
+              </div>
               <div className="player-penalty-tag">
                 {p.breakdown.penalties.length > 0 ? `${p.breakdown.penalties.length} penaliz.` : ''}
               </div>

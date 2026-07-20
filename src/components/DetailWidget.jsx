@@ -22,9 +22,14 @@ export default function DetailWidget({ player, onBack }) {
           <div className="name">{player.name}</div>
           <div className="name-sub">{player.email}</div>
         </div>
-        <div>
-          <div className="total mono">{breakdown.total} pts</div>
-          <div className="total-label">Puntuación total</div>
+        <div className="score-hero-right">
+          <div className={`champ-tag ${track.campeon.status}`}>
+            {track.campeon.status === 'hit' ? '✓ Campeón' : '✗ Campeón'}
+          </div>
+          <div>
+            <div className="total mono">{breakdown.total} pts</div>
+            <div className="total-label">Puntuación total</div>
+          </div>
         </div>
       </div>
 

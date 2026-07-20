@@ -4,8 +4,9 @@ import { Trophy, Flag } from 'lucide-react';
 import LeaderboardWidget from './components/LeaderboardWidget';
 import DetailWidget from './components/DetailWidget';
 import RulesWidget from './components/RulesWidget';
+import ChampionBanner from './components/ChampionBanner';
 import { RAW_PLAYERS } from './data/players';
-import { REAL_RESULTS, STATUS_TEXT } from './data/realResults';
+import { REAL_RESULTS } from './data/realResults';
 import { buildPlayerStats, display } from './utils/scoring';
 
 function App() {
@@ -24,17 +25,10 @@ function App() {
           <h1 className="dashboard-title">Predicción Mundial 2026</h1>
           <p className="sub">Clasificación en vivo de las {players.length} predicciones, con el desglose completo de aciertos y penalizaciones de cada uno.</p>
         </div>
-        <div className="status-pill">
-          <div className="status-pill-row">
-            <Trophy size={13} />
-            <span className="label">Estado del torneo</span>
-          </div>
-          <div className="value status-live-container">
-            <span className="live-pulse-dot" aria-hidden="true" />
-            {STATUS_TEXT}
-          </div>
-        </div>
       </header>
+
+      <ChampionBanner champion={REAL_RESULTS.campeon} players={players} />
+
       <div className="pitch-divider" aria-hidden="true"><span /></div>
 
       <div className="grid-layout">

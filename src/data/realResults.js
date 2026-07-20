@@ -13,7 +13,7 @@ export const REAL_RESULTS = {
             "BÉLGICA","ESTADOS UNIDOS","ESPAÑA","PORTUGAL","SUIZA","COLOMBIA","EGIPTO","ARGENTINA"],
   semis: ["FRANCIA","ESPAÑA","INGLATERRA","ARGENTINA"],
   final: ["ESPAÑA","ARGENTINA"],
-  campeon: null, // se juega el 19/07/2026
+  campeon: "ESPAÑA", // Final 19/07/2026: España 1-0 Argentina (Ferran Torres, prórroga)
 
   // Eliminados en dieciseisavos (ronda de 32): no llegaron a octavos
   eliminados_dieciseisavos: ["ALEMANIA","SUDAFRICA","JAPON","HOLANDA","COSTA DE MARFIL","SUECIA",
@@ -26,4 +26,4 @@ export const REAL_RESULTS = {
             "NUEVA ZELANDA"]
 };
 
-export const STATUS_TEXT = "Final ESPAÑA-ARGENTINA el 19/07";
+// export const STATUS_TEXT = "España campeona del mundo 🏆 (1-0)";
